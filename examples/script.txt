@@ -1,0 +1,1 @@
+python generation.py --transcript transcript/single_speaker/en_basic.txt --scene_prompt scene_prompts/sample_outdoor.txt --user_text voice_prompts/en_woman.txt --user_voice voice_prompts/en_woman.wav --tone_url tone_descriptions/professional.txt --out_path outdoor_professional_en_woman_basic.wav

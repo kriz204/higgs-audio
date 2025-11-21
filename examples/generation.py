@@ -32,6 +32,10 @@ import torch
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
+DEBUG = False
+# DEBUG = True
+
+logger.info(f"DEBUG: {DEBUG}")
 
 AUDIO_PLACEHOLDER_TOKEN = "<|__AUDIO_PLACEHOLDER__|>"
 
@@ -494,6 +498,86 @@ def prepare_generation_context(scene_prompt, ref_audio, ref_audio_in_system_mess
     return messages, audio_ids
 
 
+def prepare_generation_context_single_speaker(
+    scene_prompt: Optional[str],
+    tone_description: Optional[str],
+    user_voice: Optional[str] , # enforce not None 
+    user_text: Optional[str], # enforce not None    
+    audio_tokenizer,
+):
+    """
+    Prepare the context for generation in single speaker mode.
+    
+    Args:
+        scene_prompt: Scene description prompt (e.g., "Audio is recorded from a quiet room.")
+        tone_description: Tone/voice description (e.g., "warm and friendly", "professional")
+        user_voice: Path to reference audio file (.wav) for voice cloning
+        user_text: Path to text file containing the transcript of the reference audio
+        audio_tokenizer: Audio tokenizer instance for encoding audio
+    
+    Returns:
+        Tuple of (messages, audio_ids):
+        - messages: List of Message objects for the conversation context
+        - audio_ids: List of audio token tensors (empty if no user_voice provided)
+    """
+
+
+    assert user_voice is not None and user_text is not None, "user_voice and user_text must be provided"
+    messages = []
+    audio_ids = []
+    
+    # Build system message with scene and tone description
+    system_message_parts = ["Generate audio following instruction."]
+    
+    scene_desc_parts = []
+    if scene_prompt:
+        scene_desc_parts.append(scene_prompt)
+    if tone_description:
+        scene_desc_parts.append(f"[TONE_DESC]: {tone_description}")
+    
+    if scene_desc_parts:
+        scene_desc = "\n\n".join(scene_desc_parts)
+        system_message_parts.append(f"<|scene_desc_start|>\n{scene_desc}\n<|scene_desc_end|>")
+    
+    system_message = Message(
+        role="system",
+        content="\n\n".join(system_message_parts),
+    )
+    messages.append(system_message)
+    
+    # Validate files exist
+    if not os.path.exists(user_voice):
+        raise FileNotFoundError(f"Voice prompt audio file {user_voice} does not exist.")
+    if not os.path.exists(user_text):
+        raise FileNotFoundError(f"Voice prompt text file {user_text} does not exist.")
+    
+    # Load text transcript
+    with open(user_text, "r", encoding="utf-8") as f:
+        prompt_text = f.read().strip()
+    
+    # Encode audio
+    audio_tokens = audio_tokenizer.encode(user_voice)
+    audio_ids.append(audio_tokens)
+    
+    # Add user message with text
+    messages.append(
+        Message(
+            role="user",
+            content=TextContent(prompt_text),
+        )
+    )
+    
+    # Add assistant message with audio reference
+    messages.append(
+        Message(
+            role="assistant",
+            content=AudioContent(audio_url=user_voice),
+        )
+    )
+    
+    return messages, audio_ids
+
+
 @click.command()
 @click.option(
     "--model_path",
@@ -556,18 +640,22 @@ def prepare_generation_context(scene_prompt, ref_audio, ref_audio_in_system_mess
     help="The maximum number of times to repeat the RAS window. Only used when --ras_win_len is set.",
 )
 @click.option(
-    "--ref_audio",
+    "--tone_url",
     type=str,
     default=None,
-    help="The voice prompt to use for generation. If not set, we will let the model randomly pick a voice. "
-    "For multi-speaker generation, you can specify the prompts as `belinda,chadwick` and we will use the voice of belinda as SPEAKER0 and the voice of chadwick as SPEAKER1.",
+    help="The url of the tone description to use for generation. If not set, we will use a default tone.",
 )
 @click.option(
-    "--ref_audio_in_system_message",
-    is_flag=True,
-    default=False,
-    help="Whether to include the voice prompt description in the system message.",
-    show_default=True,
+    "--user_voice", # url
+    type=str,
+    default=None,
+    help="The url of the voice prompt to use for generation. If not set, we will use a default voice.",
+)
+@click.option(
+    "--user_text", # url
+    type=str,
+    default=None,
+    help="The url of the text to use for generation. If not set, we will use a default text.",
 )
 @click.option(
     "--chunk_method",
@@ -633,8 +721,9 @@ def main(
     top_p,
     ras_win_len,
     ras_win_max_num_repeat,
-    ref_audio,
-    ref_audio_in_system_message,
+    user_voice,
+    user_text,
+    tone_url,
     chunk_method,
     chunk_max_word_num,
     chunk_max_num_turns,
@@ -697,6 +786,12 @@ def main(
     else:
         scene_prompt = None
 
+    tone_description = None
+    # read from tone url file
+    if tone_url is not None and os.path.exists(tone_url):
+        with open(tone_url, "r", encoding="utf-8") as f:
+            tone_description = f.read().strip()
+
     speaker_tags = sorted(set(pattern.findall(transcript)))
     # Perform some basic normalization
     transcript = normalize_chinese_punctuation(transcript)
@@ -727,12 +822,12 @@ def main(
     if not any([transcript.endswith(c) for c in [".", "!", "?", ",", ";", '"', "'", "</SE_e>", "</SE>"]]):
         transcript += "."
 
-    messages, audio_ids = prepare_generation_context(
+    messages, audio_ids = prepare_generation_context_single_speaker(
         scene_prompt=scene_prompt,
-        ref_audio=ref_audio,
-        ref_audio_in_system_message=ref_audio_in_system_message,
+        tone_description=tone_description,
+        user_voice=user_voice,
+        user_text=user_text,
         audio_tokenizer=audio_tokenizer,
-        speaker_tags=speaker_tags,
     )
     chunked_text = prepare_chunk_text(
         transcript,
@@ -746,6 +841,19 @@ def main(
         logger.info(f"Chunk {idx}:")
         logger.info(chunk_text)
         logger.info("-----")
+
+    logger.info(f"Messages: {messages}")
+    logger.info(f"Audio IDs: {audio_ids}")
+    logger.info(f"Chunked text: {chunked_text}")
+    logger.info(f"Generation chunk buffer size: {generation_chunk_buffer_size}")
+    logger.info(f"Temperature: {temperature}")
+    logger.info(f"Top K: {top_k}")
+    logger.info(f"Top P: {top_p}")
+    logger.info(f"RAS win len: {ras_win_len}")
+    logger.info(f"RAS win max num repeat: {ras_win_max_num_repeat}")
+
+    if (DEBUG):
+        exit()
 
     concat_wv, sr, text_output = model_client.generate(
         messages=messages,

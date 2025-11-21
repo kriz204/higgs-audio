@@ -27,6 +27,18 @@ python3 generation.py \
 --out_path generation.wav
 ```
 
+#### Voice clone with your own prompt audio
+Use your own reference clip and matching transcript (inline text or a path to a `.txt` file). This avoids copying files into `voice_prompts/`.
+
+```bash
+python3 generation.py \
+--transcript "This work reflects a quest for lost identity." \
+--user_voice /path/to/your_voice.wav \
+--user_text /path/to/your_voice_transcript.txt \
+--seed 12345 \
+--out_path generation.wav
+```
+
 #### (Experimental) Cross-lingual voice clone
 
 This example demonstrates voice cloning with a Chinese prompt, where the synthesized speech is in English.

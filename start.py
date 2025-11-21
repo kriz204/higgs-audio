@@ -23,7 +23,7 @@ messages = [
         content="The sun rises in the east and sets in the west. This simple fact has been observed by humans for thousands of years.",
     ),
 ]
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cuda:1" if torch.cuda.is_available() else "cpu"
 
 print(f"Using device: {device}")
 

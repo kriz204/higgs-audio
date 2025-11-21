@@ -522,7 +522,9 @@ def prepare_generation_context_single_speaker(
     """
 
 
-    assert user_voice is not None and user_text is not None, "user_voice and user_text must be provided"
+    if (user_voice is None) or (user_text is None):
+        logger.info("Both user_voice and user_text should be provided for voice clone generation.")
+
     messages = []
     audio_ids = []
     
@@ -545,35 +547,36 @@ def prepare_generation_context_single_speaker(
     )
     messages.append(system_message)
     
-    # Validate files exist
-    if not os.path.exists(user_voice):
-        raise FileNotFoundError(f"Voice prompt audio file {user_voice} does not exist.")
-    if not os.path.exists(user_text):
-        raise FileNotFoundError(f"Voice prompt text file {user_text} does not exist.")
-    
-    # Load text transcript
-    with open(user_text, "r", encoding="utf-8") as f:
-        prompt_text = f.read().strip()
-    
-    # Encode audio
-    audio_tokens = audio_tokenizer.encode(user_voice)
-    audio_ids.append(audio_tokens)
-    
-    # Add user message with text
-    messages.append(
-        Message(
-            role="user",
-            content=TextContent(prompt_text),
+    if user_voice is not None and user_text is not None:
+        # Validate files exist
+        if not os.path.exists(user_voice):
+            raise FileNotFoundError(f"Voice prompt audio file {user_voice} does not exist.")
+        if not os.path.exists(user_text):
+            raise FileNotFoundError(f"Voice prompt text file {user_text} does not exist.")
+        
+        # Load text transcript
+        with open(user_text, "r", encoding="utf-8") as f:
+            prompt_text = f.read().strip()
+        
+        # Encode audio
+        audio_tokens = audio_tokenizer.encode(user_voice)
+        audio_ids.append(audio_tokens)
+        
+        # Add user message with text
+        messages.append(
+            Message(
+                role="user",
+                content=TextContent(prompt_text),
+            )
         )
-    )
-    
-    # Add assistant message with audio reference
-    messages.append(
-        Message(
-            role="assistant",
-            content=AudioContent(audio_url=user_voice),
+        
+        # Add assistant message with audio reference
+        messages.append(
+            Message(
+                role="assistant",
+                content=AudioContent(audio_url=user_voice),
+            )
         )
-    )
     
     return messages, audio_ids
 
@@ -721,9 +724,9 @@ def main(
     top_p,
     ras_win_len,
     ras_win_max_num_repeat,
-    user_voice,
-    user_text,
-    tone_url,
+    user_voice, # url link to user_voice
+    user_text, # url link to user_text
+    tone_url, # url link to tone description
     chunk_method,
     chunk_max_word_num,
     chunk_max_num_turns,
@@ -841,16 +844,6 @@ def main(
         logger.info(f"Chunk {idx}:")
         logger.info(chunk_text)
         logger.info("-----")
-
-    logger.info(f"Messages: {messages}")
-    logger.info(f"Audio IDs: {audio_ids}")
-    logger.info(f"Chunked text: {chunked_text}")
-    logger.info(f"Generation chunk buffer size: {generation_chunk_buffer_size}")
-    logger.info(f"Temperature: {temperature}")
-    logger.info(f"Top K: {top_k}")
-    logger.info(f"Top P: {top_p}")
-    logger.info(f"RAS win len: {ras_win_len}")
-    logger.info(f"RAS win max num repeat: {ras_win_max_num_repeat}")
 
     if (DEBUG):
         exit()

@@ -1,1 +1,1 @@
-python generation.py --transcript transcript/single_speaker/en_dl.txt --scene_prompt scene_prompts/sample_outdoor.txt  --user_voice voice_prompts/belinda.wav --tone_url tone_descriptions/empathetic.txt --out_path outdoor_empathetic_auto.wav --device_id 0
+python generation.py --transcript transcript/single_speaker/en_dl.txt --scene_prompt scene_prompts/sample_outdoor.txt --user_text voice_prompts/belinda.txt --user_voice voice_prompts/belinda.wav --tone_url tone_descriptions/energetic.txt --out_path outdoor_energetic_belinda.wav --device_id 0

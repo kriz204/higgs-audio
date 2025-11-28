@@ -65,7 +65,7 @@ def main(transcript_path: str, model: str):
     rewritten = rewrite_transcript(transcript, model=model)
     click.echo(rewritten)
 
-transcript_path: str = "/home/kriz-wu/Workload/Projects/intern/higgs-audio/examples/transcript/single_speaker/custom_podcast_1_raw.txt"
+transcript_path: str = "./transcript/single_speaker/custom_podcast_1_raw.txt"
 model: str = "gpt-4o-mini"
 
 

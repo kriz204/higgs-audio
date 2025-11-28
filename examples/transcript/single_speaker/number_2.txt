@@ -1,0 +1,12 @@
+
+Time for heavy difficulty. 0.00000739. 99,999,999. 44,444,444,444,444,444,444. And an awkward fraction: 783 / 99,999.
+
+Now for the decimal accordion. 0.9. 0.99. 0.999. 0.9999999. And shrinking: 0.01. 0.0001. 0.000000003.
+
+Here are numbers embedded in sentences. In the year 2178.5, a mathematician estimated the distance to a hypothetical star as 333.3 light years, plus or minus 0.008. A sequence of signals arrived at intervals of 8.01 seconds, 8.001 seconds, and 8.00003 seconds.
+
+And now the rapid fire list. 12. 112. 1123. 602403. 8.888888. 4004. 0.003003. 111,111.1111.
+
+Finally, a numeric tongue twister. 33,333.333 repeated 3 times. Then reversed: 333.3333,000,33.
+
+If your text to speech system handled everything without skipping, flattening, or mispronouncing the difficult sequences, it’s performing extremely well. Mathematics is more than symbols on a page. Today, you listened to math in motion.

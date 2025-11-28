@@ -35,7 +35,7 @@ import torch
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = False
-DEBUG = True
+# DEBUG = True
 
 logger.info(f"DEBUG: {DEBUG}")
 
@@ -811,15 +811,14 @@ def main(
     # Disable static KV cache on MPS since it relies on CUDA graphs
     if device == "mps" and use_static_kv_cache:
         use_static_kv_cache = False
-    if (DEBUG):
-        model_client = HiggsAudioModelClient(
-            model_path=model_path,
-            audio_tokenizer=audio_tokenizer,
-            device=device,
-            device_id=device_id,
-            max_new_tokens=max_new_tokens,
-            use_static_kv_cache=use_static_kv_cache,
-        )
+    model_client = HiggsAudioModelClient(
+        model_path=model_path,
+        audio_tokenizer=audio_tokenizer,
+        device=device,
+        device_id=device_id,
+        max_new_tokens=max_new_tokens,
+        use_static_kv_cache=use_static_kv_cache,
+    )
 
     pattern = re.compile(r"\[(SPEAKER\d+)\]")
 

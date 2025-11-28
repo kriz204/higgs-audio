@@ -1,0 +1,9 @@
+Welcome to The Curious Calculus Podcast. I’m your host, Dr. Mira Lane. Today’s episode is built specifically to push a text to speech system to its limits. You’ll hear unusual numbers, extreme decimal precision, awkward transitions, and patterns that often cause synthetic voices to stumble. If your model reads everything smoothly, it’s doing excellent work.
+
+Let’s start with a warm-up. Try these numbers: 0.00016. 12.5 million. 137,889. 999.9999. And a long one: 3.141592653589.
+
+Now we move into scientific notation. Listen carefully. 1.23 × 10⁻⁴. 5.0 × 10¹². 9.9988 × 10⁷. 0.000029 × 10⁹. Switching between formats like these is challenging for any speech model.
+
+Here are some integer sequences that frequently confuse automated voices. 1,234. 12,345. 123,456. 1,234,567. Now backwards: 7,654. 76,543. 765,432.
+
+Next comes an irregular numeric escalation. 1. 100. 100.01. 100.0001. 10,000. 10,001. 10,000.001. 10,000.0000038. These jumps force the system to stabilize pacing while switching scales quickly.

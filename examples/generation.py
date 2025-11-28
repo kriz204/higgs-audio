@@ -187,7 +187,7 @@ class HiggsAudioModelClient:
         device=None,
         device_id=None,
         max_new_tokens=2048,
-        kv_cache_lengths: List[int] = [1024, 4096, 8192],  # Multiple KV cache sizes,
+        kv_cache_lengths: List[int] = [1024, 4096, 8192, 16384],  # Multiple KV cache sizes,
         use_static_kv_cache=False,
     ):
         # Use explicit device if provided, otherwise try CUDA/MPS/CPU
